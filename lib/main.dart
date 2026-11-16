@@ -105,7 +105,6 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
   }
 }
 
-/// Home screen styled after modern teen gig & service platforms
 class HomeScreen extends StatelessWidget {
   final VoidCallback onNavigateToEarnings;
   final VoidCallback onNavigateToProjects;
@@ -123,7 +122,6 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Funngro Assessment'),
         actions: [
-          // Coins balance pill inspired by teen fintech apps
           GestureDetector(
             onTap: onNavigateToEarnings,
             child: Container(
@@ -174,23 +172,14 @@ class HomeScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
           children: [
-            // Welcome Header
             _buildWelcomeHeader(context),
             const SizedBox(height: 16),
-
-            // Search Bar
             _buildSearchBar(context),
             const SizedBox(height: 18),
-
-            // Hero Promo Banner
             _buildHeroBanner(context),
             const SizedBox(height: 22),
-
-            // Categories Section
             _buildCategoriesSection(context),
             const SizedBox(height: 24),
-
-            // Assessment Deliverables Section
             _buildDeliverablesSection(context),
             const SizedBox(height: 24),
           ],
@@ -491,8 +480,6 @@ class HomeScreen extends StatelessWidget {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
         ),
         const SizedBox(height: 12),
-
-        // Part 2: Projects List
         _buildDeliverableCard(
           context,
           badge: 'PART 2',
@@ -506,8 +493,6 @@ class HomeScreen extends StatelessWidget {
           onTap: onNavigateToProjects,
         ),
         const SizedBox(height: 12),
-
-        // Part 1: Earnings Screen
         _buildDeliverableCard(
           context,
           badge: 'PART 1',

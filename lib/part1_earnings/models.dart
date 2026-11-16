@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 
-/// Represents a single earning entry in a teen's earnings history.
 @immutable
 class Earning {
   final String id;

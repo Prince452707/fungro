@@ -21,7 +21,6 @@ class FakeEarningsApi {
     });
   }
 
-  /// Broadcast stream simulating real-time wallet credits (e.g., project approvals, referral bonuses).
   Stream<Earning> walletUpdates({Duration period = const Duration(seconds: 8)}) {
     var counter = 9000;
     return Stream.periodic(period, (i) {
@@ -35,7 +34,6 @@ class FakeEarningsApi {
     }).asBroadcastStream();
   }
 
-  /// Fetches rich detail for an individual earning item when tapped.
   Future<String> fetchDetail(String earningId) async {
     await Future.delayed(const Duration(milliseconds: 350));
     return 'Transaction Verified ✅\nID: $earningId\nStatus: Settled to UPI Wallet\nProcessed via Funngro Teen Pay System.';

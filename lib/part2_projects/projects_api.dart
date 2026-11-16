@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math';
 
-/// Custom exception thrown by ProjectsApi to simulate network or server failures.
 class ApiException implements Exception {
   final String message;
   const ApiException(this.message);
@@ -10,7 +9,6 @@ class ApiException implements Exception {
   String toString() => 'ApiException: $message';
 }
 
-/// Domain model representing a teen freelance project on Funngro.
 class Project {
   final String id;
   final String title;
@@ -39,15 +37,11 @@ class Project {
       id.hashCode ^ title.hashCode ^ company.hashCode ^ payout.hashCode;
 }
 
-/// Given ProjectsApi specification (as provided in Part 2):
 class ProjectsApi {
   final _rng = Random();
 
-  /// Optional test hook to deterministically force failure for unit tests and Loom demo.
   bool? forceFailNext;
 
-  /// Returns 20 projects per page. Pages 0..7 exist.
-  /// ~900ms latency. Fails (throws ApiException) roughly 1 in 5 calls.
   Future<List<Project>> fetchProjects(int page) async {
     await Future.delayed(const Duration(milliseconds: 900));
     if (forceFailNext == true) {

@@ -3,9 +3,6 @@ import 'earnings_controller.dart';
 import 'earnings_state.dart';
 import 'models.dart';
 
-/// Screen displaying a teen's earnings history.
-/// Engineered for 60fps virtualization across 3,000+ items on low-end Android devices
-/// with a modern, clean UI inspired by teen fintech & gig platforms.
 class EarningsScreen extends StatefulWidget {
   const EarningsScreen({super.key});
 
@@ -39,7 +36,6 @@ class _EarningsScreenState extends State<EarningsScreen> {
           appBar: AppBar(
             title: const Text('My Earnings'),
             actions: [
-              // Deterministic error toggle for recording & live demo defense
               IconButton(
                 icon: Icon(
                   _controller.forceNextError
@@ -94,8 +90,8 @@ class _EarningsScreenState extends State<EarningsScreen> {
               children: [
                 Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFF0F3),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFFF0F3),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.error_outline_rounded, size: 48, color: Color(0xFFE11D48)),
@@ -172,16 +168,12 @@ class _EarningsScreenState extends State<EarningsScreen> {
         ),
       EarningsData(:final items) => Column(
           children: [
-            // Top Balance Snapshot Card
             _buildBalanceHeroCard(context, items.length),
-
-            // Virtualized 3,000 items list
             Expanded(
               child: RefreshIndicator(
                 color: const Color(0xFF00A896),
                 onRefresh: () => _controller.refresh(),
                 child: ListView.builder(
-                  // itemExtent guarantees O(1) viewport layout calculations for 3,000 items.
                   itemExtent: 84.0,
                   itemCount: items.length,
                   padding: const EdgeInsets.symmetric(vertical: 6),
@@ -277,7 +269,6 @@ class _EarningsScreenState extends State<EarningsScreen> {
     );
   }
 
-  /// Safe tap handler with in-flight guard, mounted checks, and snackbar error feedback.
   Future<void> _handleItemTap(Earning earning) async {
     if (_controller.isFetchingDetail) return;
 
@@ -319,8 +310,8 @@ class _EarningsScreenState extends State<EarningsScreen> {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE8F8F5),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE8F8F5),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.receipt_long_rounded, color: Color(0xFF00A896), size: 24),
@@ -395,8 +386,6 @@ class _EarningsScreenState extends State<EarningsScreen> {
   }
 }
 
-/// Extracted, const-capable tile widget to isolate rebuild boundaries.
-/// Uses Material widget directly to ensure proper ink splashes and zero framework warnings.
 class _EarningListTile extends StatelessWidget {
   final Earning earning;
   final String formattedAmount;

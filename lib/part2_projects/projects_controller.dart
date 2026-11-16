@@ -3,8 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'projects_api.dart';
 import 'projects_state.dart';
 
-/// Controller encapsulating infinite-scroll pagination, race safety, error recovery,
-/// and de-duplication. Pure Dart, decoupled from Flutter UI for fast unit tests.
 class ProjectsController extends ChangeNotifier {
   final ProjectsApi _api;
 
@@ -16,7 +14,6 @@ class ProjectsController extends ChangeNotifier {
 
   ProjectsController({ProjectsApi? api}) : _api = api ?? ProjectsApi();
 
-  /// Deterministic error injection for reliable acceptance tests & Loom demo.
   void setForceFailNext(bool value) {
     _api.forceFailNext = value;
     notifyListeners();
@@ -24,7 +21,6 @@ class ProjectsController extends ChangeNotifier {
 
   bool? get forceFailNext => _api.forceFailNext;
 
-  /// Loads page 0. Used on first screen open or after initial error retry.
   Future<void> loadInitial() async {
     final token = ++_generationToken;
     _state = _state.copyWith(
@@ -40,7 +36,6 @@ class ProjectsController extends ChangeNotifier {
     try {
       final items = await _api.fetchProjects(0);
 
-      // Discard if a newer request (e.g., refresh) superseded this in-flight call
       if (token != _generationToken || _isDisposed) return;
 
       if (items.isEmpty) {
@@ -68,9 +63,7 @@ class ProjectsController extends ChangeNotifier {
     _safeNotify();
   }
 
-  /// Triggered when the user scrolls near the bottom of the list.
   Future<void> loadMore() async {
-    // Guards: prevent duplicate or invalid calls
     if (_state.isLoadingMore ||
         _state.hasReachedEnd ||
         _state.status != ListStatus.ready ||
@@ -90,11 +83,9 @@ class ProjectsController extends ChangeNotifier {
     try {
       final newItems = await _api.fetchProjects(pageToLoad);
 
-      // Discard stale response if user triggered refresh while this page was in flight
       if (token != _generationToken || _isDisposed) return;
 
       if (newItems.isEmpty || newItems.length < 20) {
-        // De-duplicate by ID against existing items
         final existingIds = _state.items.map((p) => p.id).toSet();
         final uniqueNew = newItems.where((p) => !existingIds.contains(p.id));
 
@@ -118,7 +109,6 @@ class ProjectsController extends ChangeNotifier {
     } catch (e) {
       if (token != _generationToken || _isDisposed) return;
 
-      // Crucial: preserve already-loaded items untouched and present inline retry
       _state = _state.copyWith(
         isLoadingMore: false,
         loadMoreError: e,
@@ -127,7 +117,6 @@ class ProjectsController extends ChangeNotifier {
     _safeNotify();
   }
 
-  /// Retries loading the exact page that failed, without advancing or skipping items.
   Future<void> retryLoadMore() async {
     if (_state.loadMoreError == null) return;
     _state = _state.copyWith(clearLoadMoreError: true);
@@ -135,8 +124,6 @@ class ProjectsController extends ChangeNotifier {
     await loadMore();
   }
 
-  /// Pull-to-refresh: increments generation token to invalidate in-flight calls.
-  /// Keeps existing items visible until new page 0 arrives for graceful UX.
   Future<void> refresh() async {
     final token = ++_generationToken;
 
@@ -166,7 +153,6 @@ class ProjectsController extends ChangeNotifier {
       }
     } catch (e) {
       if (token != _generationToken || _isDisposed) return;
-      // If refresh fails while items were present, retain current items or show error
       if (_state.items.isEmpty) {
         _state = _state.copyWith(status: ListStatus.initialError);
       }

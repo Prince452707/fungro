@@ -67,7 +67,6 @@ void main() {
       final errorState = controller.state as EarningsError;
       expect(errorState.message, contains('Server error'));
 
-      // Retry
       api.shouldFail = false;
       await controller.loadEarnings();
 
@@ -79,7 +78,6 @@ void main() {
       await controller.loadEarnings();
       final initialCount = (controller.state as EarningsData).items.length;
 
-      // Emit new unique earning
       final newLiveEarning = Earning(
         id: 'new_unique_live_1',
         title: 'Instant Bonus',
@@ -88,14 +86,12 @@ void main() {
       );
       api.emitWalletUpdate(newLiveEarning);
 
-      // Wait a microtask turn for stream event processing
       await Future<void>.delayed(Duration.zero);
 
       final updatedData = controller.state as EarningsData;
       expect(updatedData.items.length, initialCount + 1);
       expect(updatedData.items.first.id, 'new_unique_live_1');
 
-      // Emit the SAME earning again -> de-duplication must prevent duplicate entry
       api.emitWalletUpdate(newLiveEarning);
       await Future<void>.delayed(Duration.zero);
 

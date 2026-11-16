@@ -3,8 +3,6 @@ import 'projects_api.dart';
 import 'projects_controller.dart';
 import 'projects_state.dart';
 
-/// Screen displaying paginated projects with infinite scrolling, inline error recovery,
-/// pull-to-refresh race safety, and full lifecycle cleanup.
 class ProjectsScreen extends StatefulWidget {
   const ProjectsScreen({super.key});
 
@@ -26,7 +24,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
 
     _scrollController.addListener(_onScroll);
 
-    // Edge case check: on very tall screens/tablets, 20 items might not exceed viewport height.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkIfNeedMoreContent();
     });
@@ -37,7 +34,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
 
-    // Trigger next page when user scrolls within 200px of bottom
     if (maxScroll - currentScroll <= 200.0) {
       _controller.loadMore();
     }
@@ -77,7 +73,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                   : 'Explore Projects',
             ),
             actions: [
-              // Deterministic debug toggle for 5-minute screen recording
               IconButton(
                 icon: Icon(
                   _controller.forceFailNext == true
@@ -105,7 +100,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
           ),
           body: Column(
             children: [
-              // Real Filter / Search Bar
               if (state.status == ListStatus.ready && state.items.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
@@ -137,8 +131,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                     ),
                   ),
                 ),
-
-              // Main List Content
               Expanded(
                 child: _buildContent(context, state),
               ),
@@ -151,7 +143,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
 
   Widget _buildContent(BuildContext context, ProjectsState state) {
     return switch (state.status) {
-      // F2: First-load state
       ListStatus.initialLoading => const Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -165,8 +156,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
             ],
           ),
         ),
-
-      // F3: First-load error with full-screen retry
       ListStatus.initialError => Center(
           child: Padding(
             padding: const EdgeInsets.all(28.0),
@@ -208,8 +197,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
             ),
           ),
         ),
-
-      // F8: Empty state
       ListStatus.empty => Center(
           child: Padding(
             padding: const EdgeInsets.all(28.0),
@@ -249,8 +236,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
             ),
           ),
         ),
-
-      // Ready state: Single ListView.builder with infinite scroll and dynamic footer
       ListStatus.ready => RefreshIndicator(
           color: const Color(0xFF00A896),
           onRefresh: () async {
@@ -263,7 +248,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   }
 
   Widget _buildProjectsList(BuildContext context, ProjectsState state) {
-    // Apply local real-time search filter if active
     final displayItems = _searchFilter.isEmpty
         ? state.items
         : state.items
@@ -276,7 +260,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
         state.loadMoreError != null ||
         state.hasReachedEnd;
 
-    // Show footer only when viewing full list or when at the end
     final hasFooter = showFooter && _searchFilter.isEmpty;
     final itemCount = displayItems.length + (hasFooter ? 1 : 0);
 
@@ -286,7 +269,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       itemCount: itemCount,
       itemBuilder: (context, index) {
-        // Footer index
         if (index == displayItems.length) {
           return _buildFooter(context, state);
         }
@@ -303,7 +285,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   }
 
   Widget _buildFooter(BuildContext context, ProjectsState state) {
-    // F4: Page-load spinner
     if (state.isLoadingMore) {
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 14),
@@ -331,7 +312,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       );
     }
 
-    // F5: Page-load inline error row with retry button (keeps loaded items on screen)
     if (state.loadMoreError != null) {
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 12),
@@ -376,7 +356,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       );
     }
 
-    // F6: End-of-list distinct footer
     if (state.hasReachedEnd) {
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 16),
@@ -548,11 +527,11 @@ class _ProjectTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pastelColors = [
-      const Color(0xFFE8F8F5), // Mint
-      const Color(0xFFF3E8FF), // Lavender
-      const Color(0xFFFFF7E6), // Peach
-      const Color(0xFFE8F4FD), // Sky
-      const Color(0xFFFFF0F3), // Rose
+      const Color(0xFFE8F8F5),
+      const Color(0xFFF3E8FF),
+      const Color(0xFFFFF7E6),
+      const Color(0xFFE8F4FD),
+      const Color(0xFFFFF0F3),
     ];
     final cardBg = pastelColors[index % pastelColors.length];
 
@@ -575,7 +554,6 @@ class _ProjectTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top row: verified chip & index
                 Row(
                   children: [
                     Container(
@@ -609,8 +587,6 @@ class _ProjectTile extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-
-                // Main Info: Company Avatar & Project Title
                 Row(
                   children: [
                     Container(
@@ -659,8 +635,6 @@ class _ProjectTile extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 14),
-
-                // Bottom Row: Payout & Apply Button
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [

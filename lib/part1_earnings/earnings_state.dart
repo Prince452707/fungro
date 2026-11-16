@@ -1,8 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'models.dart';
 
-/// Sealed state hierarchy for the Earnings screen.
-/// Guarantees compile-time exhaustive state handling in UI widgets.
 @immutable
 sealed class EarningsState {
   const EarningsState();

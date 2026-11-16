@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'projects_api.dart';
 
-/// Status of the primary screen / first page load.
 enum ListStatus {
   initialLoading,
   initialError,
@@ -9,16 +8,15 @@ enum ListStatus {
   empty,
 }
 
-/// Immutable state model representing the projects list and pagination lifecycle.
 @immutable
 class ProjectsState {
   final List<Project> items;
   final ListStatus status;
   final bool isLoadingMore;
-  final Object? loadMoreError; // Non-null renders the inline footer retry row
+  final Object? loadMoreError;
   final bool hasReachedEnd;
   final int nextPage;
-  final int generationToken; // Discards stale async responses on pull-to-refresh
+  final int generationToken;
 
   const ProjectsState({
     this.items = const [],
