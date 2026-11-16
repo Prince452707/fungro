@@ -5,7 +5,6 @@ import 'projects_state.dart';
 
 /// Screen displaying paginated projects with infinite scrolling, inline error recovery,
 /// pull-to-refresh race safety, and full lifecycle cleanup.
-/// UI styled with clean teen gig cards inspired by modern service marketplaces.
 class ProjectsScreen extends StatefulWidget {
   const ProjectsScreen({super.key});
 
@@ -16,16 +15,8 @@ class ProjectsScreen extends StatefulWidget {
 class _ProjectsScreenState extends State<ProjectsScreen> {
   late final ProjectsController _controller;
   final ScrollController _scrollController = ScrollController();
-  String _selectedCategory = 'All';
-
-  final List<String> _categories = const [
-    'All',
-    'Beta Testing',
-    'Design',
-    'Content',
-    'Coding',
-    'Surveys',
-  ];
+  final TextEditingController _searchController = TextEditingController();
+  String _searchFilter = '';
 
   @override
   void initState() {
@@ -63,6 +54,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
 
   @override
   void dispose() {
+    _searchController.dispose();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     _controller.dispose();
@@ -113,8 +105,38 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
           ),
           body: Column(
             children: [
-              // Category Filter Pills
-              _buildCategorySelector(),
+              // Real Filter / Search Bar
+              if (state.status == ListStatus.ready && state.items.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (val) => setState(() => _searchFilter = val.trim().toLowerCase()),
+                      decoration: InputDecoration(
+                        hintText: 'Filter loaded projects or companies...',
+                        hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                        prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF00A896), size: 20),
+                        suffixIcon: _searchFilter.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear_rounded, size: 18),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() => _searchFilter = '');
+                                },
+                              )
+                            : null,
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                    ),
+                  ),
+                ),
 
               // Main List Content
               Expanded(
@@ -124,47 +146,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildCategorySelector() {
-    return Container(
-      height: 44,
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: _categories.length,
-        itemBuilder: (context, index) {
-          final cat = _categories[index];
-          final isSelected = cat == _selectedCategory;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: FilterChip(
-              label: Text(cat),
-              selected: isSelected,
-              showCheckmark: false,
-              labelStyle: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: isSelected ? const Color(0xFF00A896) : const Color(0xFF64748B),
-              ),
-              backgroundColor: Colors.white,
-              selectedColor: const Color(0xFFE8F8F5),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                side: BorderSide(
-                  color: isSelected ? const Color(0xFF00A896) : const Color(0xFFE2E8F0),
-                  width: 1.2,
-                ),
-              ),
-              onSelected: (val) {
-                setState(() => _selectedCategory = cat);
-              },
-            ),
-          );
-        },
-      ),
     );
   }
 
@@ -178,7 +159,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
               CircularProgressIndicator(color: Color(0xFF00A896)),
               SizedBox(height: 16),
               Text(
-                'Fetching live projects for teenagers...',
+                'Fetching exciting projects for you...',
                 style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
               ),
             ],
@@ -282,28 +263,40 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   }
 
   Widget _buildProjectsList(BuildContext context, ProjectsState state) {
+    // Apply local real-time search filter if active
+    final displayItems = _searchFilter.isEmpty
+        ? state.items
+        : state.items
+            .where((p) =>
+                p.title.toLowerCase().contains(_searchFilter) ||
+                p.company.toLowerCase().contains(_searchFilter))
+            .toList();
+
     final showFooter = state.isLoadingMore ||
         state.loadMoreError != null ||
         state.hasReachedEnd;
 
-    final itemCount = state.items.length + (showFooter ? 1 : 0);
+    // Show footer only when viewing full list or when at the end
+    final hasFooter = showFooter && _searchFilter.isEmpty;
+    final itemCount = displayItems.length + (hasFooter ? 1 : 0);
 
     return ListView.builder(
       controller: _scrollController,
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       itemCount: itemCount,
       itemBuilder: (context, index) {
         // Footer index
-        if (index == state.items.length) {
+        if (index == displayItems.length) {
           return _buildFooter(context, state);
         }
 
-        final project = state.items[index];
+        final project = displayItems[index];
         return _ProjectTile(
           key: ValueKey(project.id),
           project: project,
           index: index + 1,
+          onTap: () => _showProjectDetailSheet(context, project),
         );
       },
     );
@@ -330,7 +323,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
             ),
             SizedBox(width: 12),
             Text(
-              'Loading next page of gigs...',
+              'Loading next page of projects...',
               style: TextStyle(color: Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.w500),
             ),
           ],
@@ -338,7 +331,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       );
     }
 
-    // F5: Page-load inline error row with retry button
+    // F5: Page-load inline error row with retry button (keeps loaded items on screen)
     if (state.loadMoreError != null) {
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 12),
@@ -361,7 +354,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF9F1239)),
                   ),
                   Text(
-                    'Your loaded projects are safe.',
+                    'Already-loaded projects are preserved.',
                     style: TextStyle(fontSize: 11, color: Color(0xFFBE123C)),
                   ),
                 ],
@@ -413,21 +406,147 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
 
     return const SizedBox.shrink();
   }
+
+  void _showProjectDetailSheet(BuildContext context, Project project) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (bottomSheetContext) => Padding(
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8F8F5),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(Icons.work_outline_rounded, color: Color(0xFF00A896), size: 26),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        project.title,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      Text(
+                        'Client: ${project.company} • ID: ${project.id}',
+                        style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const Divider(height: 28),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Stipend Compensation', style: TextStyle(color: Color(0xFF64748B), fontSize: 12)),
+                      Text(
+                        '₹${project.payout}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF00A896),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Estimated Time', style: TextStyle(color: Color(0xFF64748B), fontSize: 12)),
+                      Text('2–4 hours/week', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Verification Status', style: TextStyle(color: Color(0xFF64748B), fontSize: 12)),
+                      Text('Funngro Verified ✅', style: TextStyle(color: Color(0xFF00A896), fontWeight: FontWeight.bold, fontSize: 12)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.of(bottomSheetContext).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Application submitted for ${project.title}! 🎉'),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00A896),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+                icon: const Icon(Icons.send_rounded, size: 18),
+                label: const Text('Submit Application', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _ProjectTile extends StatelessWidget {
   final Project project;
   final int index;
+  final VoidCallback onTap;
 
   const _ProjectTile({
     super.key,
     required this.project,
     required this.index,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Generate soft pastel colors per item like Image 2
     final pastelColors = [
       const Color(0xFFE8F8F5), // Mint
       const Color(0xFFF3E8FF), // Lavender
@@ -437,158 +556,155 @@ class _ProjectTile extends StatelessWidget {
     ];
     final cardBg = pastelColors[index % pastelColors.length];
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFEDF2F7), width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.018),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Top row: Rating chip & Index
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFFBEB),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFFDE68A)),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: const Color(0xFFEDF2F7), width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.015),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top row: verified chip & index
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFBEB),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFFDE68A)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.star_rounded, size: 13, color: Color(0xFFF59E0B)),
+                      SizedBox(width: 4),
+                      Text(
+                        'Verified Gig',
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF92400E)),
+                      ),
+                    ],
+                  ),
                 ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.star_rounded, size: 13, color: Color(0xFFF59E0B)),
-                    SizedBox(width: 4),
-                    Text(
-                      '4.9 (verified)',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF92400E)),
-                    ),
-                  ],
+                const Spacer(),
+                Text(
+                  '#$index',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF94A3B8),
+                  ),
                 ),
-              ),
-              const Spacer(),
-              Text(
-                '#$index',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF94A3B8),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
+              ],
+            ),
+            const SizedBox(height: 12),
 
-          // Main Info: Company Avatar & Project Title
-          Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: cardBg,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Text(
-                    project.company.substring(0, project.company.length > 2 ? 2 : 1).toUpperCase(),
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF0F172A),
+            // Main Info: Company Avatar & Project Title
+            Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: cardBg,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text(
+                      project.company.substring(0, project.company.length > 2 ? 2 : 1).toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0F172A),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        project.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0F172A)),
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          const Icon(Icons.business_rounded, size: 12, color: Color(0xFF64748B)),
+                          const SizedBox(width: 4),
+                          Text(
+                            project.company,
+                            style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+
+            // Bottom Row: Payout & Apply Button
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      project.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0F172A)),
+                    const Text(
+                      'STIPEND PAYOUT',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF94A3B8),
+                        letterSpacing: 0.5,
+                      ),
                     ),
-                    const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        const Icon(Icons.business_rounded, size: 12, color: Color(0xFF64748B)),
-                        const SizedBox(width: 4),
-                        Text(
-                          project.company,
-                          style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
-                        ),
-                      ],
+                    Text(
+                      '₹${project.payout}',
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF00A896),
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // Bottom Row: Payout & Apply Button
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'STIPEND PAYOUT',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF94A3B8),
-                      letterSpacing: 0.5,
-                    ),
+                ElevatedButton.icon(
+                  onPressed: onTap,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF00A896),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    visualDensity: VisualDensity.compact,
                   ),
-                  Text(
-                    '₹${project.payout}',
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF00A896),
-                    ),
-                  ),
-                ],
-              ),
-              ElevatedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Applied to ${project.title}! 🎉'),
-                      duration: const Duration(seconds: 1),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00A896),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  visualDensity: VisualDensity.compact,
+                  icon: const Text('Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  label: const Icon(Icons.arrow_forward_rounded, size: 14),
                 ),
-                icon: const Text('Apply', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                label: const Icon(Icons.arrow_forward_rounded, size: 14),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

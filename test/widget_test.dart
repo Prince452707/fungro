@@ -1,12 +1,21 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fungro/main.dart';
 
 void main() {
-  testWidgets('App smoke test: loads MainNavigationShell with Home, Projects, and Earnings', (WidgetTester tester) async {
-    await tester.pumpWidget(const FunngroAssessmentApp());
+  testWidgets('App smoke test: loads MainNavigationShell with Overview, Projects, and Earnings', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
-    expect(find.text('Welcome back, Alex! 👋'), findsOneWidget);
-    expect(find.text('Part 1: Earnings'), findsOneWidget);
-    expect(find.text('Part 2: Projects'), findsOneWidget);
+    await tester.pumpWidget(const FunngroAssessmentApp());
+    await tester.pump();
+
+    expect(find.text('Funngro Assessment'), findsOneWidget);
+    expect(find.text('Earnings History Screen'), findsOneWidget);
+    expect(find.text('Paginated Projects List'), findsOneWidget);
   });
 }

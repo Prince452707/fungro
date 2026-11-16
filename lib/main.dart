@@ -12,7 +12,7 @@ class FunngroAssessmentApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Funngro',
+      title: 'Funngro Take-Home Assessment',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
@@ -20,7 +20,7 @@ class FunngroAssessmentApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF00A896),
           primary: const Color(0xFF00A896),
-          secondary: const Color(0xFF5B4DFF),
+          secondary: const Color(0xFF6366F1),
           surface: Colors.white,
           brightness: Brightness.light,
         ),
@@ -37,21 +37,12 @@ class FunngroAssessmentApp extends StatelessWidget {
           ),
           iconTheme: IconThemeData(color: Color(0xFF0F172A)),
         ),
-        cardTheme: CardThemeData(
-          color: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: Color(0xFFEDF2F7), width: 1.2),
-          ),
-        ),
       ),
       home: const MainNavigationShell(),
     );
   }
 }
 
-/// Navigation Shell featuring bottom navigation like commercial teen apps
 class MainNavigationShell extends StatefulWidget {
   const MainNavigationShell({super.key});
 
@@ -66,10 +57,13 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: switch (_currentIndex) {
-        0 => const HomeScreen(),
+        0 => HomeScreen(
+            onNavigateToEarnings: () => setState(() => _currentIndex = 2),
+            onNavigateToProjects: () => setState(() => _currentIndex = 1),
+          ),
         1 => const ProjectsScreen(),
         2 => const EarningsScreen(),
-        _ => const HomeScreen(),
+        _ => const SizedBox.shrink(),
       },
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -90,19 +84,19 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
           indicatorColor: const Color(0xFFE6F7F5),
           destinations: const [
             NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home_rounded, color: Color(0xFF00A896)),
-              label: 'Home',
+              icon: Icon(Icons.dashboard_outlined),
+              selectedIcon: Icon(Icons.dashboard_rounded, color: Color(0xFF00A896)),
+              label: 'Overview',
             ),
             NavigationDestination(
               icon: Icon(Icons.work_outline_rounded),
               selectedIcon: Icon(Icons.work_rounded, color: Color(0xFF00A896)),
-              label: 'Projects',
+              label: 'Projects (Part 2)',
             ),
             NavigationDestination(
               icon: Icon(Icons.account_balance_wallet_outlined),
               selectedIcon: Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF00A896)),
-              label: 'Earnings',
+              label: 'Earnings (Part 1)',
             ),
           ],
         ),
@@ -111,301 +105,122 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
   }
 }
 
-/// Modern Home Screen inspired by modern services & teen gig discovery UI
+/// Clean, focused assessment hub with direct entry points and architecture summary
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final VoidCallback onNavigateToEarnings;
+  final VoidCallback onNavigateToProjects;
+
+  const HomeScreen({
+    super.key,
+    required this.onNavigateToEarnings,
+    required this.onNavigateToProjects,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        title: const Text('Funngro Assessment'),
+      ),
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header Row: User Info & Coin Pill + Bell
-              _buildTopHeader(context),
-              const SizedBox(height: 20),
+          children: [
+            // Target Device & Context Header
+            _buildDeviceContextCard(context),
+            const SizedBox(height: 20),
 
-              // Search Bar
-              _buildSearchBar(context),
-              const SizedBox(height: 20),
-
-              // Hero Promotion Card
-              _buildHeroPromoCard(context),
-              const SizedBox(height: 24),
-
-              // Section 1: Explore Categories (Assessment Entry Points)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Assessment Modules',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF0F172A),
-                    ),
-                  ),
-                  Text(
-                    'Flutter v3.44',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
-                ],
+            // Section Title
+            const Text(
+              'ASSESSMENT DELIVERABLES',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF64748B),
+                letterSpacing: 0.6,
               ),
-              const SizedBox(height: 14),
+            ),
+            const SizedBox(height: 12),
 
-              // Modules Grid (Part 1 and Part 2)
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildCategoryCard(
-                      context,
-                      title: 'Part 1: Earnings',
-                      subtitle: '3,000 items @ 60fps',
-                      icon: Icons.account_balance_wallet_rounded,
-                      bgColor: const Color(0xFFE8F8F5), // Mint
-                      iconColor: const Color(0xFF00A896),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const EarningsScreen()),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: _buildCategoryCard(
-                      context,
-                      title: 'Part 2: Projects',
-                      subtitle: 'Infinite scroll list',
-                      icon: Icons.work_rounded,
-                      bgColor: const Color(0xFFF3E8FF), // Lavender
-                      iconColor: const Color(0xFF7C3AED),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const ProjectsScreen()),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildCategoryCard(
-                      context,
-                      title: 'Live Wallet',
-                      subtitle: 'WebSocket stream',
-                      icon: Icons.bolt_rounded,
-                      bgColor: const Color(0xFFFFF7E6), // Warm Peach
-                      iconColor: const Color(0xFFD97706),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const EarningsScreen()),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: _buildCategoryCard(
-                      context,
-                      title: 'Unit Tests',
-                      subtitle: '12/12 passing',
-                      icon: Icons.verified_rounded,
-                      bgColor: const Color(0xFFFFF0F3), // Blush Rose
-                      iconColor: const Color(0xFFE11D48),
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('All 12 controller unit tests verified & passing! ✅'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 26),
+            // Card 1: Part 1 - Earnings Screen
+            _buildModuleCard(
+              context,
+              partTag: 'PART 1',
+              title: 'Earnings History Screen',
+              subtitle: 'Virtualized 3,000 items at 60fps with live wallet stream',
+              tagColor: const Color(0xFF00A896),
+              tagBgColor: const Color(0xFFE8F8F5),
+              icon: Icons.account_balance_wallet_rounded,
+              features: const [
+                'O(1) itemExtent layout virtualization (3,000 items)',
+                'Single StreamSubscription cancelled in dispose()',
+                'Cached NumberFormat eliminates 3ms locale parsing',
+                'Sealed states: Loading, Data, Empty, Error with Retry',
+                'Safe tap handling with in-flight guards & mounted checks',
+              ],
+              onTap: onNavigateToEarnings,
+            ),
+            const SizedBox(height: 16),
 
-              // Highlight Banner: Low-end Android Device Optimization
-              _buildLowEndSpecsCard(context),
-              const SizedBox(height: 24),
+            // Card 2: Part 2 - Projects List
+            _buildModuleCard(
+              context,
+              partTag: 'PART 2',
+              title: 'Paginated Projects List',
+              subtitle: 'Infinite scroll against flaky API with inline error recovery',
+              tagColor: const Color(0xFF6366F1),
+              tagBgColor: const Color(0xFFEEF2FF),
+              icon: Icons.work_rounded,
+              features: const [
+                'Infinite scroll triggered within 200px of bottom',
+                'Generation tokens discard stale responses on refresh',
+                'Inline error row preserves loaded items on failure',
+                'Retry loads exact same page without skipping items',
+                'Deterministic AppBar bug icon to force failure for demo',
+              ],
+              onTap: onNavigateToProjects,
+            ),
+            const SizedBox(height: 20),
 
-              // Featured Teen Gigs Section Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Featured Opportunities',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF0F172A),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const ProjectsScreen()),
-                      );
-                    },
-                    child: const Text(
-                      'See all →',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF00A896),
-                      ),
-                    ),
-                  ),
-                ],
+            // Section Title
+            const Text(
+              'SYSTEM VERIFICATION & SPECS',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF64748B),
+                letterSpacing: 0.6,
               ),
-              const SizedBox(height: 12),
+            ),
+            const SizedBox(height: 12),
 
-              // Featured Gig Tile
-              _buildFeaturedGigItem(
-                context,
-                title: 'Beta App Feedback & Review',
-                company: 'CRED India',
-                payout: '₹1,500',
-                rating: '4.9 (128 reviews)',
-                color: const Color(0xFFE8F4FD),
-              ),
-              const SizedBox(height: 12),
-              _buildFeaturedGigItem(
-                context,
-                title: '30s Instagram Reel Editing',
-                company: 'Boat Lifestyle',
-                payout: '₹1,200',
-                rating: '4.8 (94 reviews)',
-                color: const Color(0xFFE8F8F5),
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
+            // Verification Metrics Card
+            _buildVerificationCard(context),
+            const SizedBox(height: 24),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildTopHeader(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: const Color(0xFFE6F7F5),
-            shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFFB2EBE4), width: 1.5),
-          ),
-          child: const Center(
-            child: Icon(Icons.person_rounded, color: Color(0xFF00A896), size: 24),
-          ),
-        ),
-        const SizedBox(width: 12),
-        const Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    'Welcome back, Alex! 👋',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF0F172A),
-                    ),
-                  ),
-                ],
-              ),
-              Text(
-                'Funngro Teen Freelancer • Level 2',
-                style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-              ),
-            ],
-          ),
-        ),
-        // Coins Pill
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFFBEB),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFFDE68A)),
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.monetization_on_rounded, size: 16, color: Color(0xFFD97706)),
-              SizedBox(width: 6),
-              Text(
-                '2,450',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF92400E),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSearchBar(BuildContext context) {
+  Widget _buildDeviceContextCard(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: const Row(
-        children: [
-          Icon(Icons.search_rounded, color: Color(0xFF00A896), size: 20),
-          SizedBox(width: 10),
-          Text(
-            'Search gigs, projects, or payouts...',
-            style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeroPromoCard(BuildContext context) {
-    return Container(
-      width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFE6F7F5), Color(0xFFD3F2EE)],
+          colors: [Color(0xFF00A896), Color(0xFF00897B)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFB2EBE4), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00A896).withValues(alpha: 0.25),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -415,11 +230,11 @@ class HomeScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00A896),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Text(
-                  'TOP PERFORMER',
+                  'TARGET HARDWARE SPEC',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 10,
@@ -429,257 +244,207 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              const Icon(Icons.trending_up_rounded, color: Color(0xFF00A896), size: 20),
+              const Icon(Icons.speed_rounded, color: Colors.white, size: 20),
             ],
           ),
           const SizedBox(height: 12),
           const Text(
-            'Work on Live Projects,\nEarn Direct to UPI! 🚀',
+            '₹8,000 Android Devices\n(2GB RAM • Budget SoC)',
             style: TextStyle(
-              fontSize: 18,
+              color: Colors.white,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               height: 1.25,
-              color: Color(0xFF0F172A),
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           const Text(
-            'Over ₹10 Lakhs paid to teenagers this month.',
-            style: TextStyle(fontSize: 12, color: Color(0xFF475569)),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const ProjectsScreen()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00A896),
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
-            icon: const Text('Browse 160+ Gigs', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-            label: const Icon(Icons.arrow_forward_rounded, size: 16),
+            'Engineered for 60fps scrolling, minimal memory allocations, and zero side effects in build().',
+            style: TextStyle(color: Color(0xFFE0F2F1), fontSize: 13, height: 1.4),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCategoryCard(
+  Widget _buildModuleCard(
     BuildContext context, {
+    required String partTag,
     required String title,
     required String subtitle,
+    required Color tagColor,
+    required Color tagBgColor,
     required IconData icon,
-    required Color bgColor,
-    required Color iconColor,
+    required List<String> features,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: iconColor.withValues(alpha: 0.18), width: 1.2),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Icon(icon, color: iconColor, size: 22),
-                ),
-                Icon(Icons.arrow_circle_right_rounded, color: iconColor, size: 20),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF0F172A),
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.grey.shade700,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLowEndSpecsCard(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF1F5F9),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.phone_android_rounded, color: Color(0xFF475569)),
-          ),
-          const SizedBox(width: 14),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Engineered for ₹8,000 Androids',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0F172A)),
-                ),
-                SizedBox(height: 2),
-                Text(
-                  'O(1) itemExtent virtualization • Pure build() • Memory safe',
-                  style: TextStyle(color: Color(0xFF64748B), fontSize: 11),
-                ),
-              ],
-            ),
-          ),
-          const Icon(Icons.verified_rounded, color: Color(0xFF00A896), size: 20),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeaturedGigItem(
-    BuildContext context, {
-    required String title,
-    required String company,
-    required String payout,
-    required String rating,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1.2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-              child: Text(
-                company[0],
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: tagBgColor,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      partTag,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: tagColor,
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: tagBgColor,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon, color: tagColor, size: 20),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 17,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF0F172A),
                 ),
               ),
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.star_rounded, size: 14, color: Color(0xFFF59E0B)),
-                    const SizedBox(width: 3),
-                    Text(
-                      rating,
-                      style: const TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0F172A)),
-                ),
-                Text(
-                  company,
-                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                payout,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF00A896),
-                ),
-              ),
               const SizedBox(height: 4),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE6F7F5),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  'Apply',
-                  style: TextStyle(
-                    color: Color(0xFF00A896),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
+              Text(
+                subtitle,
+                style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+              ),
+              const SizedBox(height: 16),
+              const Divider(height: 1, color: Color(0xFFF1F5F9)),
+              const SizedBox(height: 14),
+              ...features.map(
+                (f) => Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.check_circle_rounded, color: tagColor, size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          f,
+                          style: const TextStyle(fontSize: 12, color: Color(0xFF334155)),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    'Launch Screen',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: tagColor,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(Icons.arrow_forward_rounded, size: 16, color: tagColor),
+                ],
+              ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVerificationCard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        children: [
+          _buildMetricRow(
+            icon: Icons.check_circle_outline_rounded,
+            iconColor: const Color(0xFF00A896),
+            title: 'Unit Test Suite',
+            status: '12 / 12 Passing',
+            statusColor: const Color(0xFF00A896),
+          ),
+          const Divider(height: 20, color: Color(0xFFF1F5F9)),
+          _buildMetricRow(
+            icon: Icons.analytics_outlined,
+            iconColor: const Color(0xFF6366F1),
+            title: 'Static Analysis',
+            status: '0 Errors • 0 Lints',
+            statusColor: const Color(0xFF6366F1),
+          ),
+          const Divider(height: 20, color: Color(0xFFF1F5F9)),
+          _buildMetricRow(
+            icon: Icons.bug_report_outlined,
+            iconColor: const Color(0xFFD97706),
+            title: 'Deterministic Failure Toggle',
+            status: 'Enabled (AppBar icon)',
+            statusColor: const Color(0xFFD97706),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildMetricRow({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String status,
+    required Color statusColor,
+  }) {
+    return Row(
+      children: [
+        Icon(icon, color: iconColor, size: 20),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            title,
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF0F172A)),
+          ),
+        ),
+        Text(
+          status,
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: statusColor),
+        ),
+      ],
     );
   }
 }
