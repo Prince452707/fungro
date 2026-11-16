@@ -396,6 +396,7 @@ class _EarningsScreenState extends State<EarningsScreen> {
 }
 
 /// Extracted, const-capable tile widget to isolate rebuild boundaries.
+/// Uses Material widget directly to ensure proper ink splashes and zero framework warnings.
 class _EarningListTile extends StatelessWidget {
   final Earning earning;
   final String formattedAmount;
@@ -412,72 +413,69 @@ class _EarningListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isLiveBonus = earning.id.startsWith('live_earn');
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Material(
         color: isLiveBonus ? const Color(0xFFFFFBEB) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isLiveBonus ? const Color(0xFFFDE68A) : const Color(0xFFEDF2F7),
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.015),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-        leading: Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: isLiveBonus ? const Color(0xFFFEF3C7) : const Color(0xFFE8F8F5),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            isLiveBonus ? Icons.bolt_rounded : Icons.currency_rupee_rounded,
-            color: isLiveBonus ? const Color(0xFFD97706) : const Color(0xFF00A896),
-            size: 20,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: isLiveBonus ? const Color(0xFFFDE68A) : const Color(0xFFEDF2F7),
+            width: 1.2,
           ),
         ),
-        title: Text(
-          earning.title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0F172A)),
-        ),
-        subtitle: Text(
-          '${earning.date.day}/${earning.date.month}/${earning.date.year} • ${earning.id}',
-          style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              formattedAmount,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: isLiveBonus ? const Color(0xFFD97706) : const Color(0xFF00A896),
-              ),
+        elevation: 0,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+          leading: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: isLiveBonus ? const Color(0xFFFEF3C7) : const Color(0xFFE8F8F5),
+              borderRadius: BorderRadius.circular(12),
             ),
-            const SizedBox(height: 2),
-            Text(
-              isLiveBonus ? 'Instant' : 'Settled',
-              style: TextStyle(
-                fontSize: 10,
-                color: isLiveBonus ? const Color(0xFFD97706) : const Color(0xFF64748B),
-                fontWeight: FontWeight.w600,
-              ),
+            child: Icon(
+              isLiveBonus ? Icons.bolt_rounded : Icons.currency_rupee_rounded,
+              color: isLiveBonus ? const Color(0xFFD97706) : const Color(0xFF00A896),
+              size: 20,
             ),
-          ],
+          ),
+          title: Text(
+            earning.title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0F172A)),
+          ),
+          subtitle: Text(
+            '${earning.date.day}/${earning.date.month}/${earning.date.year} • ${earning.id}',
+            style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
+          ),
+          trailing: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                formattedAmount,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: isLiveBonus ? const Color(0xFFD97706) : const Color(0xFF00A896),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                isLiveBonus ? 'Instant' : 'Settled',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: isLiveBonus ? const Color(0xFFD97706) : const Color(0xFF64748B),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          onTap: onTap,
         ),
-        onTap: onTap,
       ),
     );
   }
