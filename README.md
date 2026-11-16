@@ -12,3 +12,9 @@ Crashes in the new version went from 0.4% to 1.9% of users. All are from the ad 
 If many users are affected, or the app is not opening, I will halt immediately. If only a few phones are affected, I will switch off the resume ads for them and release a fix. User safety comes first, then ad revenue.
 
 I will send you one more update by 4 pm today.
+
+
+
+
+
+vedio of project - https://drive.google.com/drive/folders/1gwYEQYGftX9i-fqFNvmSiqaMdQ0GMvsb
