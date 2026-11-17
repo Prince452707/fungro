@@ -1,14 +1,14 @@
 # Part 3: Production Incident Response (v6.4.0 Crash Spike)
 
-## 1. Message to Founder (Slack/WhatsApp - Under 120 Words)
+## 1. Message to Founder (Slack/WhatsApp)
 
-> "Anik — On it. Hold rollout at 20% right now, don't halt yet. 
+> "Sir, let us not increase the rollout beyond 20% today. I will check the data and tell you by 1 pm today whether to halt or continue.
 > 
-> The 98.1% crash-free rate is contained to 1 in 5 of our users; 80% remain stable on v6.3.9 generating full revenue. 
+> Crashes in the new version went from 0.4% to 1.9% of users. All are from the ad SDK when the user returns to the app. We did not change the SDK, so something else in this release is causing it.
 > 
-> The crash is a `PlatformException` on app resume inside the ad SDK. Because we didn't touch the ad SDK code, this points to a lifecycle timing change in v6.4.0 (activity recreation or engine detach during Android memory trim). 
+> If many users are affected, or the app is not opening, I will halt immediately. If only a few phones are affected, I will switch off the resume ads for them and release a fix. User safety comes first, then ad revenue.
 > 
-> My team is isolating OEM and Android OS patterns in Crashlytics right now. I will have the root cause and a concrete decision (hold, hotfix v6.4.1, or halt) on your desk by 1:00 PM today. We protect users first, revenue close second."
+> I will send you one more update by 4 pm today."
 
 ---
 
